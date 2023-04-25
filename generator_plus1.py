@@ -8,7 +8,8 @@ import threading
 from subprocess import STDOUT, PIPE
 import sys
 
-semaphore = threading.Semaphore(50)
+semaphore = threading.Semaphore(25)
+
 
 class people:
     def __init__(self, pid):
@@ -209,14 +210,16 @@ def generate_data() -> str:
     return data
 
 
-def all_judge(num,  jar):
-    for ii in range(0, num, 5):
-        for jj in range(ii, ii + 5):
-            if jj >= num:
-                break
-            print(jj)
-            filename = "./input/file{:d}.txt".format(jj)
-            threading.Thread(target=judge, args=(filename, jar, main_jar, jj)).start()
+def sub_judge(input_id, jar):
+    # for ii in range(0, num, 5):
+    #     for jj in range(ii, ii + 5):
+    #         if jj >= num:
+    #             break
+    #         print(jj)
+    filename = "./input/file{:d}.txt".format(input_id)
+    semaphore.acquire()
+    semaphore.release()
+    threading.Thread(target=judge, args=(filename, jar, main_jar, input_id)).start()
 
 
 for jar in jars:
@@ -235,5 +238,7 @@ for i in range(num):
         f.write(data)
     f.close()
 
-for jar in jars:
-    all_judge(num, jar)
+for ii in range(0, num):
+    for jar in jars:
+        sub_judge(ii, jar)
+
