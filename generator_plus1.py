@@ -2,6 +2,7 @@ import os
 import random
 # from xeger import Xeger
 import random
+import shutil
 import subprocess
 import threading
 from subprocess import STDOUT, PIPE
@@ -219,8 +220,12 @@ def all_judge(num,  jar):
 
 
 for jar in jars:
+    if os.path.exists(str(jar).split(".")[0]):
+        shutil.rmtree(str(jar).split(".")[0])
     os.mkdir(str(jar).split(".")[0])
 
+if os.path.exists("input"):
+    shutil.rmtree("input")
 os.mkdir("input")
 
 for i in range(num):
