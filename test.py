@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import threading
+import json
 from subprocess import STDOUT, PIPE
 
 import generator
@@ -74,7 +75,8 @@ def judge(filename1, jar1, jar2, round1):
     print(str(jar1).split(".")[0] + " round" + str(round1) + " ac")
 
 
-maxRound = 10000
+with open("./settings.json", "r", encoding='utf-8') as f:
+    maxRound = json.load(f)["maxRound"]
 
 
 # outer modules
