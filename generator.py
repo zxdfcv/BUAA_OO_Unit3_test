@@ -1,25 +1,19 @@
 import random
-import random
-import subprocess
-from subprocess import STDOUT, PIPE
-import os
-import shutil
+import json
 
 persons = []
 groups = []
 messages = []
 
-type = 1                    # 1 for mrok, 0 for other
+with open('./settings.json', 'r', encoding='utf-8') as fp:
+    data = json.load(fp)
+    op_type = data["op_type"]
 
-lines = 100                # the length of data
-people_num = 500
-group_num = 100
-messages_num = 100
-
-filepath = "./data.txt"
-
-
-
+    lines = data["lines"]
+    people_num = data["people_num"]
+    group_num = data["group_num"]
+    messages_num = data["messages_num"]
+    print(data)
 
 
 class people:
@@ -51,7 +45,8 @@ class group:
                 return True
         return False
 
-def printAllPersons(persons) :
+
+def printAllPersons(persons):
     line = str(len(persons)) + " "
     for person in persons:
         line = line + str(person.id) + " "
@@ -62,29 +57,33 @@ def printAllPersons(persons) :
     print("qtsok " + line + line)
 
 
-def containPeople(id) :
+def containPeople(id):
     for person in persons:
-        if person.id == id :
+        if person.id == id:
             return True
     return False
 
-def containGroup(id) :
+
+def containGroup(id):
     for group in groups:
-        if group.id == id :
+        if group.id == id:
             return True
     return False
 
-def containMessage(id) :
+
+def containMessage(id):
     for message in messages:
         if message == id:
             return True
     return False
 
-def getGroup(id) :
+
+def getGroup(id):
     for group in groups:
-        if group.id == id :
+        if group.id == id:
             return group
     return None
+
 
 def addRelation(id1, id2):
     people1 = None
@@ -98,22 +97,25 @@ def addRelation(id1, id2):
         people1.acq.append(id2)
         people2.acq.append(id1)
 
+
 def rd(a, b):
     return random.randint(a, b)
 
+
 def add_group():
-    id = random.randint(-group_num/2, group_num)
+    id = random.randint(-group_num / 2, group_num)
     if len(groups) == 0:
         groups.append(group(id))
-    elif not containGroup(id) :
+    elif not containGroup(id):
         groups.append(group(id))
     return "ag " + str(id)
 
-def add_to_group() :
-    flag = rd(0,4)
+
+def add_to_group():
+    flag = rd(0, 4)
     if flag == 0 or len(persons) == 0 or len(groups) == 0:
-        id1 = rd(-group_num/2, group_num)
-        id2 = rd(-people_num/2,people_num/2)
+        id1 = rd(-group_num / 2, group_num)
+        id2 = rd(-people_num / 2, people_num / 2)
     else:
         id1 = persons[rd(0, len(persons) - 1)].id
         id2 = groups[rd(0, len(groups) - 1)].id
@@ -121,7 +123,8 @@ def add_to_group() :
         getGroup(id2).people.append(id1)
     return "atg " + str(id1) + " " + str(id2)
 
-def del_from_group() :
+
+def del_from_group():
     flag = rd(0, 4)
     if flag == 0 or len(persons) == 0 or len(groups) == 0:
         id1 = rd(-group_num / 2, group_num)
@@ -131,9 +134,10 @@ def del_from_group() :
         id2 = groups[rd(0, len(groups) - 1)].id
     if containPeople(id1) and containGroup(id2) and getGroup(id2).containPerson(id1):
         getGroup(id2).people.remove(id1)
-    return  "dfg " + str(id1) + " " + str(id2)
+    return "dfg " + str(id1) + " " + str(id2)
 
-def query_group_value_sum() :
+
+def query_group_value_sum():
     flag = rd(0, 1)
     if flag == 0 or len(groups) == 0:
         id = rd(-group_num / 2, group_num)
@@ -141,7 +145,8 @@ def query_group_value_sum() :
         id = groups[rd(0, len(groups) - 1)].id
     return "qgvs " + str(id)
 
-def query_group_age_var() :
+
+def query_group_age_var():
     flag = rd(0, 1)
     if flag == 0 or len(groups) == 0:
         id = rd(-group_num / 2, group_num)
@@ -149,7 +154,8 @@ def query_group_age_var() :
         id = groups[rd(0, len(groups) - 1)].id
     return "qgav " + str(id)
 
-def modify_relation() :
+
+def modify_relation():
     flag = rd(0, 4)
     if flag == 0 or len(persons) == 0:
         id1 = rd(-people_num / 2, people_num / 2)
@@ -160,7 +166,8 @@ def modify_relation() :
     value = rd(-100, 100)
     return "mr " + str(id1) + " " + str(id2) + " " + str(value)
 
-def query_best_acquaintance() :
+
+def query_best_acquaintance():
     flag = rd(0, 1)
     if flag == 0 or len(persons) == 0:
         id = rd(-people_num / 2, people_num / 2)
@@ -168,11 +175,13 @@ def query_best_acquaintance() :
         id = persons[rd(0, len(persons) - 1)].id
     return "qba " + str(id)
 
-def query_couple_sum() :
+
+def query_couple_sum():
     return "qcs"
 
-def add_message() :
-    id = rd(-messages_num/2, messages_num/2)
+
+def add_message():
+    id = rd(-messages_num / 2, messages_num / 2)
     type = rd(0, 1)
     flag = rd(0, 2)
     if flag == 0 or len(persons) == 0:
@@ -192,17 +201,21 @@ def add_message() :
             id2 = rd(-group_num / 2, group_num / 2)
         else:
             id2 = groups[rd(0, len(groups) - 1)].id
-    if containPeople(id1) and ((type == 0 and containPeople(id2) and id1 != id2) or (type == 1 and containGroup(id2))) and containMessage(id) == False:
+    if containPeople(id1) and (
+            (type == 0 and containPeople(id2) and id1 != id2) or (type == 1 and containGroup(id2))) and containMessage(
+            id) == False:
         messages.append(id)
     return "am " + str(id) + " " + str(socialValue) + " " + str(type) + " " + str(id1) + " " + str(id2)
 
-def send_message () :
+
+def send_message():
     flag = rd(0, 2)
     if flag == 0 or len(messages) == 0:
         id = rd(-messages_num / 2, messages_num / 2)
     else:
         id = messages[rd(0, len(messages) - 1)]
     return "sm " + str(id)
+
 
 def query_social_value():
     flag = rd(0, 1)
@@ -212,6 +225,7 @@ def query_social_value():
         id = persons[rd(0, len(persons) - 1)].id
     return "qsv " + str(id)
 
+
 def query_received_messages():
     flag = rd(0, 1)
     if flag == 0 or len(persons) == 0:
@@ -220,53 +234,59 @@ def query_received_messages():
         id = persons[rd(0, len(persons) - 1)].id
     return "qrm " + str(id)
 
-def add_person() :
-    id = random.randint(-people_num/2, people_num/2)
+
+def add_person():
+    id = random.randint(-people_num / 2, people_num / 2)
     name = "1"
-    age = rd(0,200)
+    age = rd(0, 200)
     if len(persons) == 0:
         persons.append(people(id))
     elif not containPeople(id):
         persons.append(people(id))
     return "ap " + str(id) + " " + name + " " + str(age)
 
-def add_relation() :
-    flag = rd(0,5)
-    if len(persons) > 2 and flag != 5 :
+
+def add_relation():
+    flag = rd(0, 5)
+    if len(persons) > 2 and flag != 5:
         id1 = persons[rd(0, len(persons) - 1)].id
         id2 = persons[rd(0, len(persons) - 1)].id
     else:
-        id1 = random.randint(-people_num/2,people_num/2)
-        id2 = random.randint(-people_num/2,people_num/2)
+        id1 = random.randint(-people_num / 2, people_num / 2)
+        id2 = random.randint(-people_num / 2, people_num / 2)
     if containPeople(id1) and containPeople(id2) and id1 != id2:
         addRelation(id1, id2)
-    value = rd(1,100)
-    return "ar " +  str(id1) + " " + str(id2) + " " + str(value)
+    value = rd(1, 100)
+    return "ar " + str(id1) + " " + str(id2) + " " + str(value)
 
-def query_value() :
+
+def query_value():
     flag = rd(0, 5)
     if len(persons) > 2 and flag != 5:
         id1 = persons[rd(0, len(persons) - 1)].id
         id2 = persons[rd(0, len(persons) - 1)].id
     else:
-        id1 = random.randint(-people_num/2,people_num/2)
-        id2 = random.randint(-people_num/2,people_num/2)
+        id1 = random.randint(-people_num / 2, people_num / 2)
+        id2 = random.randint(-people_num / 2, people_num / 2)
     return "qv " + str(id1) + " " + str(id2)
 
-def query_circle() :
+
+def query_circle():
     flag = rd(0, 5)
     if len(persons) > 2 and flag != 5:
         id1 = persons[rd(0, len(persons) - 1)].id
         id2 = persons[rd(0, len(persons) - 1)].id
     else:
-        id1 = random.randint(-people_num/2,people_num/2)
-        id2 = random.randint(-people_num/2,people_num/2)
+        id1 = random.randint(-people_num / 2, people_num / 2)
+        id2 = random.randint(-people_num / 2, people_num / 2)
     return "qci " + str(id1) + " " + str(id2)
 
-def query_block_sum() :
+
+def query_block_sum():
     return "qbs"
 
-def query_triple_sum() :
+
+def query_triple_sum():
     return "qts"
 
 
@@ -297,6 +317,7 @@ def generate_data_small() -> []:
         pool[relation[0]].acq[relation[1]] = value
         pool[relation[1]].acq[relation[0]] = value
     return pool
+
 
 bound = 5
 value_bound = 100
@@ -370,7 +391,7 @@ def modify_relation_test() -> str:
         pool.pop(who)
         remove_dup(pool, who)
         after = gen_person_line(pool)
-    elif mode == 2:  #3
+    elif mode == 2:  # 3
         params[0] = rd(-bound, bound)
         params[1] = rd(-bound, bound)
         while params[0] == params[1]:
@@ -624,55 +645,54 @@ def modify_relation_test() -> str:
     entry_req = before + "{} {} {} ".format(params[0], params[1], params[2]) + after
     return entry_req
 
+
 print_qtsok = False
 
-def generate_data() :
-        persons = []
-        groups = []
-        messages = []
-        data = ""
-        for i in range(lines) :
-            if type == 0:
-                flag = rd(0, 32)
-                if flag < 6:
-                    ge = add_person()
-                elif flag >= 6 and flag < 12:
-                    ge = add_relation()
-                elif flag == 12:
-                    ge = query_value()
-                elif flag == 13:
-                    ge = query_circle()
-                elif flag == 14:
-                    ge = query_block_sum()
-                elif flag == 15:
-                    ge = query_triple_sum()
-                elif flag >= 16 and flag <= 17:
-                    ge = add_group()
-                elif flag >= 18 and flag <= 20:
-                    ge = add_to_group()
-                elif flag == 21:
-                    ge = del_from_group()
-                elif flag == 22:
-                    ge = query_group_value_sum()
-                elif flag == 23:
-                    ge = query_group_age_var()
-                elif flag == 24 or flag == 25:
-                    ge = modify_relation()
-                elif flag == 26:
-                    ge = query_best_acquaintance()
-                elif flag >= 27 and flag <= 28:
-                    ge = add_message()
-                elif flag >= 29 and flag <= 30:
-                    ge = send_message()
-                elif flag == 31:
-                    ge = query_social_value()
-                elif flag == 32:
-                    ge = query_couple_sum()
-            if type == 1:
-                ge = "mrok " + modify_relation_test()
-            data = data + ge + "\n"
-        with open("data.txt", 'w+') as file:
-            file.write(data)
-        return data
 
-
+def generate_data():
+    persons.clear()
+    groups.clear()
+    messages.clear()  # clear element
+    data1 = ""
+    ge = ""
+    for i in range(lines):
+        if op_type == 0:
+            flag = rd(0, 32)
+            if flag < 6:
+                ge = add_person()
+            elif flag >= 6 and flag < 12:
+                ge = add_relation()
+            elif flag == 12:
+                ge = query_value()
+            elif flag == 13:
+                ge = query_circle()
+            elif flag == 14:
+                ge = query_block_sum()
+            elif flag == 15:
+                ge = query_triple_sum()
+            elif flag >= 16 and flag <= 17:
+                ge = add_group()
+            elif flag >= 18 and flag <= 20:
+                ge = add_to_group()
+            elif flag == 21:
+                ge = del_from_group()
+            elif flag == 22:
+                ge = query_group_value_sum()
+            elif flag == 23:
+                ge = query_group_age_var()
+            elif flag == 24 or flag == 25:
+                ge = modify_relation()
+            elif flag == 26:
+                ge = query_best_acquaintance()
+            elif flag >= 27 and flag <= 28:
+                ge = add_message()
+            elif flag >= 29 and flag <= 30:
+                ge = send_message()
+            elif flag == 31:
+                ge = query_social_value()
+            elif flag == 32:
+                ge = query_couple_sum()
+        if op_type == 1:
+            ge = "mrok " + modify_relation_test()
+        data1 = data1 + ge + "\n"
+    return data1
